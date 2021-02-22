@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import HoldingList from "./Components/HoldingList";
 import Charts from "./Components/Charts";
+import SiteLogo from "./Components/SiteLogo";
 import {
   TextField,
   IconButton,
@@ -21,7 +22,8 @@ import axios from "axios";
 const holdingsKey = "PortfolioBuilderHoldings";
 
 const useStyles = makeStyles({
-  root: {
+  body: {
+    marginTop: "0.25rem",
     height: "100%",
   },
   portfolioSection: {
@@ -240,7 +242,7 @@ const App = () => {
 
   return (
     <Box
-      className={classes.root}
+      className={classes.body}
       display="flex"
       flexDirection="row"
       flex={1}
@@ -248,11 +250,12 @@ const App = () => {
     >
       <Box width={1} className={classes.portfolioSection}>
         <Box display="flex" flexDirection="column" width={1}>
-          <Box>
+          <Box textAlign="center">
             <Typography
               className={classes.buttonGroupOverline}
               variant="overline"
               color="textSecondary"
+              align="center"
             >
               Portfolio Controls
             </Typography>
@@ -266,11 +269,14 @@ const App = () => {
               flex={1}
               width={1}
             >
+              <Box>
+                <SiteLogo />
+              </Box>
               <Box flexDirection="row">
                 <TextField
                   id="standard-number"
-                  label="Ticker"
-                  placeholder="Add a stock"
+                  label="Add a stock"
+                  placeholder="Ticker"
                   value={tickerSearch}
                   onChange={(e) =>
                     setTickerSearch(e.target.value.toUpperCase())

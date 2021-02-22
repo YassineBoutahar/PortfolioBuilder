@@ -1,6 +1,6 @@
 import React from "react";
 import SingleHolding from "./SingleHolding";
-import { List, Typography } from "@material-ui/core";
+import { List, Box, Typography } from "@material-ui/core";
 import { Holding, HoldingListProps } from "../../shared/types";
 
 const HoldingList = ({
@@ -15,9 +15,11 @@ const HoldingList = ({
     <List
       dense
       subheader={
-        <Typography align="center" variant="h6" color="textPrimary">
-          {holdings.length > 0 ? "Your stocks" : ""}
-        </Typography>
+        <Box textAlign="center" marginBottom="-0.4rem">
+          <Typography variant="overline" color="textSecondary">
+            {holdings.length > 0 ? "Your stocks" : ""}
+          </Typography>
+        </Box>
       }
     >
       {holdings.map((holding: Holding) => {

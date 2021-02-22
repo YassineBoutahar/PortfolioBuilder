@@ -61,3 +61,8 @@ export interface PriceChangeProps {
   currentPrice: number;
   previousPrice: number;
 }
+
+export interface PressChartProps {
+  height: number;
+  width: number;
+}
