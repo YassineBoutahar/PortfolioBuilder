@@ -1,6 +1,6 @@
 import React from "react";
 import SingleHolding from "./SingleHolding";
-import { List } from "@material-ui/core";
+import { List, Typography } from "@material-ui/core";
 import { Holding, HoldingListProps } from "../../shared/types";
 
 const HoldingList = ({
@@ -12,7 +12,14 @@ const HoldingList = ({
   getAvailablePercentage,
 }: HoldingListProps) => {
   return (
-    <List dense>
+    <List
+      dense
+      subheader={
+        <Typography align="center" variant="h6" color="textPrimary">
+          {holdings.length > 0 ? "Your stocks" : ""}
+        </Typography>
+      }
+    >
       {holdings.map((holding: Holding) => {
         return (
           <SingleHolding

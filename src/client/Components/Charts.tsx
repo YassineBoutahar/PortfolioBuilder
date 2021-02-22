@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Typography, makeStyles } from "@material-ui/core";
+import { Box, Typography, makeStyles, useTheme } from "@material-ui/core";
 import { ToggleButtonGroup, ToggleButton } from "@material-ui/lab";
 import { Polar, Line } from "react-chartjs-2";
 
@@ -12,11 +12,16 @@ import { HistoricalResult } from "yahoo-finance2/api/modules/historical";
 
 const useStyles = makeStyles({
   buttonGroupOverline: {
-    lineHeight: 1.25,
+    lineHeight: 1.75,
     fontSize: "0.7rem",
   },
   lineChartButtonGroup: {
     marginRight: "0.5rem",
+  },
+  chartTitle: {
+    marginRight: "0.5rem",
+    marginLeft: "0.5rem",
+    marginTop: "1rem",
   },
 });
 
@@ -29,6 +34,7 @@ const Charts = ({
   refreshAllHistoricalData,
 }: ChartsProps) => {
   const classes = useStyles();
+  const theme = useTheme();
 
   const [chartType, setChartType] = useState("polar");
 
@@ -110,11 +116,11 @@ const Charts = ({
       label: "Weighted Avg",
       data: generatedWeightedAveragePoints(allDataSets),
       fill: false,
-      borderColor: "404040",
-      backgroundColor: "404040",
+      borderColor: theme.palette.text.secondary,
+      backgroundColor: theme.palette.text.secondary,
       borderDash: [5, 5],
-      pointBackgroundColor: "#404040",
-      pointBorderColor: "#000000",
+      pointBackgroundColor: theme.palette.text.secondary,
+      pointBorderColor: theme.palette.text.primary,
     };
   };
 
@@ -152,111 +158,134 @@ const Charts = ({
         display="flex"
         flexDirection="row"
         justifyContent="space-between"
-        alignItems="flex-end"
+        alignItems="center"
       >
-        <Box>
+        <Box display="flex" flexDirection="column">
+          <Typography
+            className={classes.buttonGroupOverline}
+            variant="overline"
+            color="textSecondary"
+          >
+            Chart Type
+          </Typography>
           <ToggleButtonGroup
             value={chartType}
             exclusive
             onChange={handleChartChange}
+            hidden={false}
             aria-label="Chart style"
           >
             <ToggleButton value="polar" aria-label="polar area">
-              <PieChartIcon />
+              <PieChartIcon fontSize="small" />
             </ToggleButton>
             <ToggleButton value="line" aria-label="line chart">
-              <TimelineIcon />
+              <TimelineIcon fontSize="small" />
             </ToggleButton>
           </ToggleButtonGroup>
         </Box>
 
-        {chartType === "line" ? (
-          <Box display="flex" flexDirection="row">
-            <Box
-              display="flex"
-              flexDirection="column"
-              className={classes.lineChartButtonGroup}
-            >
-              <Typography
-                className={classes.buttonGroupOverline}
-                variant="overline"
-                color="textSecondary"
-              >
-                Time period
-              </Typography>
-              <ToggleButtonGroup
-                value={timePeriod}
-                size="small"
-                exclusive
-                onChange={handlePeriodChange}
-                aria-label="Start date"
-              >
-                <ToggleButton
-                  value="w"
-                  aria-label="last week"
-                  disabled={interval === "1mo"}
-                >
-                  <Typography>
-                    <b>1W</b>
-                  </Typography>
-                </ToggleButton>
-                <ToggleButton value="M" aria-label="last month">
-                  <Typography>
-                    <b>1M</b>
-                  </Typography>
-                </ToggleButton>
-                <ToggleButton value="y" aria-label="last year">
-                  <Typography>
-                    <b>1Y</b>
-                  </Typography>
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </Box>
+        <Box display="flex" alignSelf="center">
+          <Typography
+            className={classes.chartTitle}
+            align="center"
+            variant="h6"
+            color="textPrimary"
+          >
+            {chartType === "line"
+              ? "Historical Portfolio Performance"
+              : "Portfolio Breakdown"}
+          </Typography>
+        </Box>
 
-            <Box
-              display="flex"
-              flexDirection="column"
-              className={classes.lineChartButtonGroup}
-            >
-              <Typography
-                className={classes.buttonGroupOverline}
-                variant="overline"
-                color="textSecondary"
+        <Box display="flex" style={{ minWidth: "5.5rem" }}>
+          {chartType === "line" ? (
+            <Box display="flex" flexDirection="row">
+              <Box
+                display="flex"
+                flexDirection="column"
+                className={classes.lineChartButtonGroup}
               >
-                Price interval
-              </Typography>
-              <ToggleButtonGroup
-                value={interval}
-                size="small"
-                exclusive
-                onChange={handleIntervalChange}
-                aria-label="Point interval"
-              >
-                <ToggleButton value="1d" aria-label="per day">
-                  <Typography>
-                    <b>1D</b>
-                  </Typography>
-                </ToggleButton>
-                <ToggleButton value="1wk" aria-label="per week">
-                  <Typography>
-                    <b>1W</b>
-                  </Typography>
-                </ToggleButton>
-                <ToggleButton
-                  value="1mo"
-                  aria-label="per month"
-                  disabled={timePeriod === "w"}
+                <Typography
+                  className={classes.buttonGroupOverline}
+                  variant="overline"
+                  color="textSecondary"
                 >
-                  <Typography>
-                    <b>1M</b>
-                  </Typography>
-                </ToggleButton>
-              </ToggleButtonGroup>
+                  Time period
+                </Typography>
+                <ToggleButtonGroup
+                  value={timePeriod}
+                  size="small"
+                  exclusive
+                  onChange={handlePeriodChange}
+                  aria-label="Start date"
+                >
+                  <ToggleButton
+                    value="w"
+                    aria-label="last week"
+                    disabled={interval === "1mo"}
+                  >
+                    <Typography>
+                      <b>1W</b>
+                    </Typography>
+                  </ToggleButton>
+                  <ToggleButton value="M" aria-label="last month">
+                    <Typography>
+                      <b>1M</b>
+                    </Typography>
+                  </ToggleButton>
+                  <ToggleButton value="y" aria-label="last year">
+                    <Typography>
+                      <b>1Y</b>
+                    </Typography>
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
+
+              <Box
+                display="flex"
+                flexDirection="column"
+                className={classes.lineChartButtonGroup}
+              >
+                <Typography
+                  className={classes.buttonGroupOverline}
+                  variant="overline"
+                  color="textSecondary"
+                >
+                  Price interval
+                </Typography>
+                <ToggleButtonGroup
+                  value={interval}
+                  size="small"
+                  exclusive
+                  onChange={handleIntervalChange}
+                  aria-label="Point interval"
+                >
+                  <ToggleButton value="1d" aria-label="per day">
+                    <Typography>
+                      <b>1D</b>
+                    </Typography>
+                  </ToggleButton>
+                  <ToggleButton value="1wk" aria-label="per week">
+                    <Typography>
+                      <b>1W</b>
+                    </Typography>
+                  </ToggleButton>
+                  <ToggleButton
+                    value="1mo"
+                    aria-label="per month"
+                    disabled={timePeriod === "w"}
+                  >
+                    <Typography>
+                      <b>1M</b>
+                    </Typography>
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
             </Box>
-          </Box>
-        ) : (
-          <></>
-        )}
+          ) : (
+            <></>
+          )}
+        </Box>
       </Box>
 
       <Box>
@@ -277,6 +306,34 @@ const Charts = ({
               // These labels appear in the legend and in the tooltips when hovering different arcs
               labels: Array.from(holdings.values()).map((h) => h.ticker),
             }}
+            options={{
+              title: {
+                display: false,
+                text: "Portfolio Breakdown",
+              },
+              legend: {
+                labels: {
+                  fontColor: theme.palette.text.primary,
+                },
+              },
+              elements: {
+                arc: {
+                  borderColor: theme.palette.text.secondary,
+                },
+              },
+              scale: {
+                gridLines: {
+                  color: theme.palette.text.secondary,
+                },
+                pointLabels: {
+                  fontColor: theme.palette.text.secondary,
+                  // Include a dollar sign in the ticks
+                  callback: function (value) {
+                    return value + "%";
+                  },
+                },
+              },
+            }}
           />
         ) : (
           <Line
@@ -285,14 +342,31 @@ const Charts = ({
               datasets: getChartDataSets(),
             }}
             options={{
+              title: {
+                display: false,
+                text: "Historical Portfolio Performance",
+              },
+              legend: {
+                labels: {
+                  fontColor: theme.palette.text.primary,
+                },
+              },
               scales: {
                 yAxes: [
                   {
                     ticks: {
+                      fontColor: theme.palette.text.secondary,
                       // Include a dollar sign in the ticks
                       callback: function (value, index, values) {
                         return "$" + value;
                       },
+                    },
+                  },
+                ],
+                xAxes: [
+                  {
+                    ticks: {
+                      fontColor: theme.palette.text.secondary,
                     },
                   },
                 ],

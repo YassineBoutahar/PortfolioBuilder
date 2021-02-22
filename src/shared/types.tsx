@@ -7,6 +7,7 @@ export interface Holding {
   currency: string;
   exchange: string;
   currentPrice: number;
+  previousClosePrice: number;
   portfolioPercentage: number;
   displayColor: string;
   historicalData?: HistoricalResult;
@@ -54,4 +55,9 @@ export interface ChartsProps {
     interval: "1d" | "1wk" | "1mo" | undefined,
     deletedTicker?: string
   ) => void;
+}
+
+export interface PriceChangeProps {
+  currentPrice: number;
+  previousPrice: number;
 }

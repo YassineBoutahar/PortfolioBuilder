@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from "react";
 import HoldingList from "./Components/HoldingList";
 import Charts from "./Components/Charts";
-import { TextField, IconButton, InputAdornment, Box } from "@material-ui/core";
+import {
+  TextField,
+  IconButton,
+  ButtonGroup,
+  InputAdornment,
+  Box,
+  Typography,
+  makeStyles,
+} from "@material-ui/core";
 import AddCircleOutlineIcon from "@material-ui/icons/AddCircleOutline";
 import RefreshIcon from "@material-ui/icons/Refresh";
+import ShareIcon from "@material-ui/icons/Share";
 import { Holding, LocalStorageItem } from "../shared/types";
 import randomColor from "randomcolor";
 import moment from "moment";
@@ -11,7 +20,32 @@ import axios from "axios";
 
 const holdingsKey = "PortfolioBuilderHoldings";
 
+const useStyles = makeStyles({
+  root: {
+    height: "100%",
+  },
+  portfolioSection: {
+    marginRight: "0.75rem",
+  },
+  portfolioBar: {
+    marginBottom: "1rem",
+  },
+  chartSection: {
+    marginLeft: "0.75rem",
+  },
+  topBarActionButton: {
+    paddingLeft: 0,
+    paddingRight: 0,
+  },
+  buttonGroupOverline: {
+    lineHeight: 1.75,
+    fontSize: "0.7rem",
+  },
+});
+
 const App = () => {
+  const classes = useStyles();
+
   const [totalValue, setTotalValue] = useState<number>(0);
   const [holdings, setHoldings] = useState<Map<string, Holding>>(new Map());
   const [remainingPercent, setRemainingPercent] = useState<number>(100);
@@ -26,7 +60,9 @@ const App = () => {
       let existingHoldings: LocalStorageItem[] = JSON.parse(
         window.localStorage.getItem(holdingsKey) || "[]"
       ) as LocalStorageItem[];
-      existingHoldings.map((h) => addQuote(h.ticker, h.portfolioPercentage));
+      existingHoldings.map((h) =>
+        addQuote(h.ticker, h.portfolioPercentage, true)
+      );
     }
   }, []);
 
@@ -66,18 +102,26 @@ const App = () => {
       ogState.delete(ticker);
       return ogState;
     });
-    refreshAllHistoricalData(moment("2020-01-01"), "1mo", ticker);
+    refreshAllHistoricalData(
+      moment().subtract(1, chosenTimePeriod),
+      chosenInterval,
+      ticker
+    );
   };
 
   const updateAllQuotes = () => {
     Array.from(holdings.keys()).forEach((ticker) => updateQuote(ticker));
   };
 
-  const addQuote = (ticker: string, portfolioPercentage: number = 0) => {
+  const addQuote = (
+    ticker: string,
+    portfolioPercentage: number = 0,
+    forRefresh: boolean = false
+  ) => {
     axios
       .get(`/quote/${ticker}`)
       .then((response) => {
-        // console.log(response);
+        console.log(response);
         if (!response.data) {
           throw Object.assign(new Error("Ticker not found!"), { code: 404 });
         }
@@ -86,11 +130,15 @@ const App = () => {
           name: response.data.longName,
           currency: response.data.financialCurrency,
           exchange: response.data.fullExchangeName,
-          currentPrice: parseFloat(response.data.ask),
+          currentPrice: parseFloat(response.data.regularMarketPrice),
+          previousClosePrice: parseFloat(
+            response.data.regularMarketPreviousClose ||
+              response.data.regularMarketOpen
+          ),
           portfolioPercentage: portfolioPercentage,
-          displayColor: randomColor({ luminosity: "dark" }),
+          displayColor: randomColor({ luminosity: "bright" }),
         };
-        if (insertHolding(ticker, newHolding)) {
+        if (insertHolding(ticker, newHolding, forRefresh)) {
           setTickerSearch("");
           getHistoricalData(
             newHolding,
@@ -111,7 +159,11 @@ const App = () => {
       .then((response) => {
         let ogHolding = holdings.get(ticker);
         if (ogHolding) {
-          ogHolding.currentPrice = parseFloat(response.data.ask);
+          ogHolding.currentPrice = parseFloat(response.data.regularMarketPrice);
+          ogHolding.previousClosePrice = parseFloat(
+            response.data.regularMarketPreviousClose ||
+              response.data.regularMarketOpen
+          );
           insertHolding(ticker, ogHolding, true);
         }
       })
@@ -187,62 +239,100 @@ const App = () => {
   };
 
   return (
-    <Box display="flex" flexDirection="row" flex={1} width={1}>
-      <Box width={1}>
-        <Box
-          display="flex"
-          flexDirection="row"
-          justifyContent="space-between"
-          flex={1}
-          width={1}
-        >
-          <Box flexDirection="row">
-            <TextField
-              id="standard-number"
-              label="Ticker"
-              value={tickerSearch}
-              onChange={(e) => setTickerSearch(e.target.value.toUpperCase())}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">$</InputAdornment>
-                ),
-              }}
-            />
-            <IconButton onClick={() => addQuote(tickerSearch)} edge="start">
-              <AddCircleOutlineIcon />
-            </IconButton>
+    <Box
+      className={classes.root}
+      display="flex"
+      flexDirection="row"
+      flex={1}
+      width={1}
+    >
+      <Box width={1} className={classes.portfolioSection}>
+        <Box display="flex" flexDirection="column" width={1}>
+          <Box>
+            <Typography
+              className={classes.buttonGroupOverline}
+              variant="overline"
+              color="textSecondary"
+            >
+              Portfolio Controls
+            </Typography>
           </Box>
-          <TextField
-            error={isNaN(totalValue) || totalValue < 0}
-            label="Total Portfolio Value"
-            type="number"
-            value={totalValue}
-            onChange={(e) => setTotalValue(parseFloat(e.target.value))}
-            InputProps={{
-              inputProps: { min: 0 },
-              startAdornment: (
-                <InputAdornment position="start">$</InputAdornment>
-              ),
-            }}
-            helperText={
-              isNaN(totalValue) || totalValue < 0 ? "Invalid Value" : ""
-            }
-          />
-          <IconButton onClick={() => updateAllQuotes()}>
-            <RefreshIcon />
-          </IconButton>
+          <Box>
+            <Box
+              className={classes.portfolioBar}
+              display="flex"
+              flexDirection="row"
+              justifyContent="space-between"
+              flex={1}
+              width={1}
+            >
+              <Box flexDirection="row">
+                <TextField
+                  id="standard-number"
+                  label="Ticker"
+                  placeholder="Add a stock"
+                  value={tickerSearch}
+                  onChange={(e) =>
+                    setTickerSearch(e.target.value.toUpperCase())
+                  }
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      addQuote(tickerSearch);
+                      e.preventDefault();
+                    }
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">$</InputAdornment>
+                    ),
+                  }}
+                />
+                <IconButton onClick={() => addQuote(tickerSearch)} edge="start">
+                  <AddCircleOutlineIcon />
+                </IconButton>
+              </Box>
+              <TextField
+                error={isNaN(totalValue) || totalValue < 0}
+                label="Total Portfolio Value"
+                type="number"
+                value={totalValue}
+                onChange={(e) => setTotalValue(parseFloat(e.target.value))}
+                InputProps={{
+                  inputProps: { min: 0 },
+                  startAdornment: (
+                    <InputAdornment position="start">$</InputAdornment>
+                  ),
+                }}
+                helperText={
+                  isNaN(totalValue) || totalValue < 0 ? "Invalid Value" : ""
+                }
+              />
+              <ButtonGroup aria-label="top bar actions">
+                <IconButton className={classes.topBarActionButton}>
+                  <ShareIcon />
+                </IconButton>
+                <IconButton
+                  className={classes.topBarActionButton}
+                  onClick={() => updateAllQuotes()}
+                >
+                  <RefreshIcon />
+                </IconButton>
+              </ButtonGroup>
+            </Box>
+          </Box>
         </Box>
-
-        <HoldingList
-          holdings={Array.from(holdings.values())}
-          portfolioValue={totalValue}
-          insertHolding={insertHolding}
-          deleteHolding={deleteHolding}
-          updatePortfolioPercentage={updatePortfolioPercentage}
-          getAvailablePercentage={getAvailablePercentage}
-        />
+        <Box>
+          <HoldingList
+            holdings={Array.from(holdings.values())}
+            portfolioValue={totalValue}
+            insertHolding={insertHolding}
+            deleteHolding={deleteHolding}
+            updatePortfolioPercentage={updatePortfolioPercentage}
+            getAvailablePercentage={getAvailablePercentage}
+          />
+        </Box>
       </Box>
-      <Box width={1}>
+      <Box className={classes.chartSection} width={1}>
         <Charts
           holdings={holdings}
           timePeriod={chosenTimePeriod}
