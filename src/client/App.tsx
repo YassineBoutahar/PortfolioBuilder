@@ -99,16 +99,21 @@ const App = () => {
   };
 
   const deleteHolding = (ticker: string) => {
+    let localStorageHoldings = Array.from(holdings.values())
+      .filter((holding) => holding.ticker !== ticker)
+      .map((h) => ({
+        ticker: h.ticker,
+        portfolioPercentage: h.portfolioPercentage,
+      }));
+    window.localStorage.setItem(
+      holdingsKey,
+      JSON.stringify(localStorageHoldings)
+    );
     setHoldings((prev) => {
       const ogState = new Map(prev);
       ogState.delete(ticker);
       return ogState;
     });
-    refreshAllHistoricalData(
-      moment().subtract(1, chosenTimePeriod),
-      chosenInterval,
-      ticker
-    );
   };
 
   const updateAllQuotes = () => {
