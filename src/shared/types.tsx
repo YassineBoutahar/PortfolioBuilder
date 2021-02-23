@@ -66,3 +66,7 @@ export interface PressChartProps {
   height: number;
   width: number;
 }
+
+export interface AppProps {
+  urlShareHash?: string;
+}

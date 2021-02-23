@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import { Router, RouteComponentProps } from "@reach/router";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import "./client/index.css";
 import App from "./client/App";
@@ -11,10 +12,20 @@ const darkTheme = createMuiTheme({
   },
 });
 
+interface ShareProps extends RouteComponentProps {
+  shareHash?: string;
+}
+
+const Home = (props: RouteComponentProps) => <App />;
+const Share = (props: ShareProps) => <App urlShareHash={props.shareHash} />;
+
 ReactDOM.render(
   <React.StrictMode>
     <ThemeProvider theme={darkTheme}>
-      <App />
+      <Router>
+        <Home path="/" />
+        <Share path="share/:shareHash" />
+      </Router>
     </ThemeProvider>
   </React.StrictMode>,
   document.getElementById("root")

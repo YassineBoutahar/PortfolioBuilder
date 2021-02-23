@@ -9,15 +9,18 @@ import {
   InputAdornment,
   Box,
   Typography,
+  Snackbar,
   makeStyles,
 } from "@material-ui/core";
+import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
 import AddCircleOutlineIcon from "@material-ui/icons/AddCircleOutline";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import ShareIcon from "@material-ui/icons/Share";
-import { Holding, LocalStorageItem } from "../shared/types";
+import { Holding, LocalStorageItem, AppProps } from "../shared/types";
 import randomColor from "randomcolor";
 import moment from "moment";
 import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
 
 const holdingsKey = "PortfolioBuilderHoldings";
 
@@ -45,8 +48,11 @@ const useStyles = makeStyles({
   },
 });
 
-const App = () => {
+const App = ({ urlShareHash }: AppProps) => {
   const classes = useStyles();
+  function Alert(props: AlertProps) {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+  }
 
   const [totalValue, setTotalValue] = useState<number>(0);
   const [holdings, setHoldings] = useState<Map<string, Holding>>(new Map());
@@ -56,17 +62,36 @@ const App = () => {
     "1wk"
   );
   const [tickerSearch, setTickerSearch] = useState<string>("");
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    if (window.localStorage.getItem(holdingsKey)) {
-      let existingHoldings: LocalStorageItem[] = JSON.parse(
-        window.localStorage.getItem(holdingsKey) || "[]"
-      ) as LocalStorageItem[];
-      existingHoldings.map((h) =>
-        addQuote(h.ticker, h.portfolioPercentage, true)
-      );
+    if (urlShareHash) {
+      fetchFromShareLink(urlShareHash);
+    } else {
+      if (window.localStorage.getItem(holdingsKey)) {
+        let existingHoldings: LocalStorageItem[] = JSON.parse(
+          window.localStorage.getItem(holdingsKey) || "[]"
+        ) as LocalStorageItem[];
+        existingHoldings.map((h) =>
+          addQuote(h.ticker, h.portfolioPercentage, true)
+        );
+      }
     }
   }, []);
+
+  const fetchFromShareLink = (shareHash: string) => {
+    axios
+      .get(`/share/${shareHash}`)
+      .then((response) => {
+        let sharedHoldings = JSON.parse(
+          response.data.PortfolioObj.S
+        ) as LocalStorageItem[];
+        sharedHoldings.map((h) =>
+          addQuote(h.ticker, h.portfolioPercentage, true)
+        );
+      })
+      .catch((err) => alert(err));
+  };
 
   const insertHolding = (
     ticker: string,
@@ -128,7 +153,6 @@ const App = () => {
     axios
       .get(`/quote/${ticker}`)
       .then((response) => {
-        console.log(response);
         if (!response.data) {
           throw Object.assign(new Error("Ticker not found!"), { code: 404 });
         }
@@ -155,7 +179,6 @@ const App = () => {
         }
       })
       .catch((error) => {
-        console.log(error);
         alert("Ticker not found!");
       });
   };
@@ -245,6 +268,28 @@ const App = () => {
     );
   };
 
+  const createShareLink = () => {
+    let newUUID = uuidv4();
+    axios
+      .post(
+        "/share",
+        {
+          portfolio: Array.from(holdings.values()).map((h) => ({
+            ticker: h.ticker,
+            portfolioPercentage: h.portfolioPercentage,
+          })),
+        },
+        { params: { shareHash: newUUID } }
+      )
+      .then((response) => {
+        let shareUrl = `${window.location.host}/share/${newUUID}`;
+        navigator.clipboard
+          .writeText(shareUrl)
+          .then(() => setSnackbarOpen(true));
+      })
+      .catch((err) => alert(`Could not fetch portfolio from DynamoDB. ${err}`));
+  };
+
   return (
     <Box
       className={classes.body}
@@ -319,7 +364,10 @@ const App = () => {
                 }
               />
               <ButtonGroup aria-label="top bar actions">
-                <IconButton className={classes.topBarActionButton}>
+                <IconButton
+                  className={classes.topBarActionButton}
+                  onClick={() => createShareLink()}
+                >
                   <ShareIcon />
                 </IconButton>
                 <IconButton
@@ -353,6 +401,15 @@ const App = () => {
           refreshAllHistoricalData={refreshAllHistoricalData}
         />
       </Box>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+      >
+        <Alert onClose={() => setSnackbarOpen(false)} severity="success">
+          Share link copied to clipboard!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

@@ -52,7 +52,7 @@ const PressChart = ({ height, width }: PressChartProps) => {
     const newDataset: ChartPoint[] = [];
     const startAt = currentIndex % allPrices.length;
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 8; i++) {
       const curr = (startAt + i) % allPrices.length;
       newDataset.push({ x: i, y: allPrices[curr] });
     }
