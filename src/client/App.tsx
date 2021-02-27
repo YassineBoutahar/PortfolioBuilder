@@ -22,6 +22,9 @@ import randomColor from "randomcolor";
 import moment from "moment";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
+import { AutocResult } from "yahoo-finance2/api/modules/autoc";
+import { TrendingSymbol } from "yahoo-finance2/api/modules/trendingSymbols";
+import { RecommendationsBySymbolResponse } from "yahoo-finance2/api/modules/recommendationsBySymbol";
 
 const holdingsKey = "PortfolioBuilderHoldings";
 
@@ -100,6 +103,11 @@ const App = ({ urlShareHash }: AppProps) => {
         );
       })
       .catch((err) => alert(err));
+  };
+
+  const updateTickerSearch = (updatedTickerSearch: string) => {
+    setTickerSearch(updatedTickerSearch);
+    getAutoCompleteTickers(updatedTickerSearch);
   };
 
   const insertHolding = (
@@ -186,7 +194,7 @@ const App = ({ urlShareHash }: AppProps) => {
             moment().subtract(1, chosenTimePeriod),
             chosenInterval
           );
-          getAutocompleteValues();
+          getAutocompleteValues(true);
         }
       })
       .catch((error) => {
@@ -213,11 +221,27 @@ const App = ({ urlShareHash }: AppProps) => {
       });
   };
 
+  const getAutoCompleteTickers = (currentSearch: string) => {
+    axios
+      .get(`/autoc/${currentSearch}`)
+      .then((response) => {
+        let allQuotes: AutocResult[] = response.data.Result;
+        setAutocompleteResults(
+          allQuotes
+            .slice(0, Math.min(allQuotes.length + 1, 6))
+            .map((q) => q.symbol)
+        );
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   const getTrendingTickers = () => {
     axios
       .get(`/trending`)
       .then((response) => {
-        let allQuotes: { symbol: string }[] = response.data.quotes;
+        let allQuotes: TrendingSymbol[] = response.data.quotes;
         setAutocompleteResults(allQuotes.map((q) => q.symbol));
       })
       .catch((error) => {
@@ -229,9 +253,10 @@ const App = ({ urlShareHash }: AppProps) => {
     axios
       .get(`/recommend/${Array.from(holdings.values()).pop()?.ticker}`)
       .then((response) => {
-        let allSymbols: { symbol: string; score: number }[] =
-          response.data.recommendedSymbols;
-        setAutocompleteResults(allSymbols.map((s) => s.symbol));
+        let allSymbols: RecommendationsBySymbolResponse = response.data;
+        setAutocompleteResults(
+          allSymbols.recommendedSymbols.map((s) => s.symbol)
+        );
       })
       .catch((error) => {
         console.log(error);
@@ -273,8 +298,10 @@ const App = ({ urlShareHash }: AppProps) => {
       });
   };
 
-  const getAutocompleteValues = () => {
-    if (holdings.size === 0) {
+  const getAutocompleteValues = (empty: boolean = false) => {
+    if (tickerSearch.length > 0 && !empty) {
+      getAutoCompleteTickers(tickerSearch);
+    } else if (holdings.size === 0) {
       getTrendingTickers();
     } else {
       getRecommendedTickers();
@@ -374,7 +401,7 @@ const App = ({ urlShareHash }: AppProps) => {
                   size="small"
                   value={tickerSearch}
                   onChange={(event, value) =>
-                    setTickerSearch(value.toUpperCase())
+                    updateTickerSearch(value.toUpperCase())
                   }
                   options={autocompleteResults}
                   renderInput={(params) => (
@@ -384,7 +411,7 @@ const App = ({ urlShareHash }: AppProps) => {
                       label="Add a stock"
                       placeholder="Ticker"
                       onChange={(e) =>
-                        setTickerSearch(e.target.value.toUpperCase())
+                        updateTickerSearch(e.target.value.toUpperCase())
                       }
                       onKeyPress={(e) => {
                         if (e.key === "Enter") {
