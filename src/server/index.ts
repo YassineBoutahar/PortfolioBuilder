@@ -3,6 +3,7 @@ import yahooFinance from "yahoo-finance2";
 import bodyParser from "body-parser";
 import AWS, { DynamoDB } from "aws-sdk";
 import { HistoricalOptions } from "yahoo-finance2/api/modules/historical";
+import { TrendingSymbolsOptions } from "yahoo-finance2/api/modules/trendingSymbols";
 
 AWS.config.update({ region: "us-east-2" });
 
@@ -19,7 +20,13 @@ app.use(
 
 app.get("/quote/:ticker", async (req, res) => {
   let ticker = req.params.ticker;
-  const quote = await yahooFinance.quote(ticker);
+  const quote = await yahooFinance.quote(
+    ticker,
+    {},
+    {
+      validateResult: false,
+    }
+  );
 
   res.json(quote);
 });
@@ -35,6 +42,43 @@ app.get("/historical/:ticker", async (req, res) => {
   });
 
   res.json(historicalData);
+});
+
+app.get("/autoc/:searchQ", async (req, res) => {
+  let searchQuery = req.params.searchQ;
+
+  const results = await yahooFinance.autoc(
+    searchQuery,
+    {},
+    {
+      validateResult: false,
+    }
+  );
+  res.json(results);
+});
+
+app.get("/recommend/:ticker", async (req, res) => {
+  let ticker = req.params.ticker;
+
+  const results = await yahooFinance.recommendationsBySymbol(
+    ticker,
+    {},
+    {
+      validateResult: false,
+    }
+  );
+  res.json(results);
+});
+
+app.get("/trending", async (req, res) => {
+  let queryOptions: TrendingSymbolsOptions = {
+    count: req.query.count || 5,
+  };
+  const results = await yahooFinance.trendingSymbols("US", queryOptions, {
+    validateResult: false,
+  });
+
+  res.json(results);
 });
 
 app.get("/share/:shareHash", async (req, res) => {
