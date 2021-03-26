@@ -6,6 +6,7 @@ import {
   ButtonGroup,
   InputAdornment,
   Box,
+  Typography,
   Snackbar,
   makeStyles,
 } from "@material-ui/core";
@@ -30,6 +31,10 @@ const useStyles = makeStyles({
   topBarActionButton: {
     paddingLeft: 0,
     paddingRight: 0,
+  },
+  buttonGroupOverline: {
+    lineHeight: 1.75,
+    fontSize: "0.7rem",
   },
   tickerSearchBar: {
     width: 120,
@@ -139,103 +144,119 @@ const PortfolioControls = ({
   };
 
   return (
-    <Box>
-      <Box
-        className={classes.root}
-        display="flex"
-        flexDirection="row"
-        justifyContent="space-between"
-        flex={1}
-        width={1}
-      >
-        <Box>
-          <SiteLogo />
-        </Box>
-        <Box flexDirection="row">
-          <Autocomplete
-            className={classes.tickerSearchBar}
-            freeSolo
-            disableClearable
-            size="small"
-            value={tickerSearch}
-            onChange={(event, value) => updateTickerSearch(value.toUpperCase())}
-            options={autocompleteResults}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                id="standard-number"
-                label="Add a stock"
-                placeholder="Ticker"
-                onChange={(e) =>
-                  updateTickerSearch(e.target.value.toUpperCase())
-                }
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    addQuote(tickerSearch);
-                    e.preventDefault();
-                  }
-                }}
-                InputProps={{
-                  ...params.InputProps,
-                  startAdornment: (
-                    <InputAdornment position="start">$</InputAdornment>
-                  ),
-                  endAdornment: (
-                    <IconButton
-                      onClick={() => {
-                        addQuote(tickerSearch);
-                        setTickerSearch("");
-                        getAutocompleteValues(true);
-                      }}
-                      edge="start"
-                      size="small"
-                    >
-                      <AddCircleOutlineIcon fontSize="small" />
-                    </IconButton>
-                  ),
-                }}
-              />
-            )}
-          />
-        </Box>
-        <TextField
-          error={isNaN(totalValue) || totalValue < 0}
-          label="Total Portfolio Value"
-          type="number"
-          value={totalValue}
-          onChange={(e) => setTotalValue(parseFloat(e.target.value))}
-          InputProps={{
-            inputProps: { min: 0 },
-            startAdornment: <InputAdornment position="start">$</InputAdornment>,
-          }}
-          helperText={
-            isNaN(totalValue) || totalValue < 0 ? "Invalid Value" : ""
-          }
-        />
-        <ButtonGroup aria-label="top bar actions">
-          <IconButton
-            className={classes.topBarActionButton}
-            onClick={() => createShareLink()}
-          >
-            <ShareIcon />
-          </IconButton>
-          <IconButton
-            className={classes.topBarActionButton}
-            onClick={() => updateAllQuotes()}
-          >
-            <RefreshIcon />
-          </IconButton>
-        </ButtonGroup>
+    <Box display="flex" flexDirection="column" width={1}>
+      <Box textAlign="center">
+        <Typography
+          className={classes.buttonGroupOverline}
+          variant="overline"
+          color="textSecondary"
+          align="center"
+        >
+          Portfolio Controls
+        </Typography>
       </Box>
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={4000}
-        onClose={() => setSnackbarOpen(false)}
-      >
-        <Alert onClose={() => setSnackbarOpen(false)} severity="success">
-          Share link copied to clipboard!
-        </Alert>
-      </Snackbar>
+      <Box>
+        <Box
+          className={classes.root}
+          display="flex"
+          flexDirection="row"
+          justifyContent="space-between"
+          flex={1}
+          width={1}
+        >
+          <Box>
+            <SiteLogo />
+          </Box>
+          <Box flexDirection="row">
+            <Autocomplete
+              className={classes.tickerSearchBar}
+              freeSolo
+              disableClearable
+              size="small"
+              value={tickerSearch}
+              onChange={(event, value) =>
+                updateTickerSearch(value.toUpperCase())
+              }
+              options={autocompleteResults}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  id="standard-number"
+                  label="Add a stock"
+                  placeholder="Ticker"
+                  onChange={(e) =>
+                    updateTickerSearch(e.target.value.toUpperCase())
+                  }
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      addQuote(tickerSearch);
+                      e.preventDefault();
+                    }
+                  }}
+                  InputProps={{
+                    ...params.InputProps,
+                    startAdornment: (
+                      <InputAdornment position="start">$</InputAdornment>
+                    ),
+                    endAdornment: (
+                      <IconButton
+                        onClick={() => {
+                          addQuote(tickerSearch);
+                          setTickerSearch("");
+                          getAutocompleteValues(true);
+                        }}
+                        edge="start"
+                        size="small"
+                      >
+                        <AddCircleOutlineIcon fontSize="small" />
+                      </IconButton>
+                    ),
+                  }}
+                />
+              )}
+            />
+          </Box>
+          <TextField
+            error={isNaN(totalValue) || totalValue < 0}
+            label="Total Portfolio Value"
+            type="number"
+            value={totalValue}
+            onChange={(e) => setTotalValue(parseFloat(e.target.value))}
+            InputProps={{
+              inputProps: { min: 0 },
+              startAdornment: (
+                <InputAdornment position="start">$</InputAdornment>
+              ),
+            }}
+            helperText={
+              isNaN(totalValue) || totalValue < 0 ? "Invalid Value" : ""
+            }
+          />
+          <ButtonGroup aria-label="top bar actions">
+            <IconButton
+              className={classes.topBarActionButton}
+              onClick={() => createShareLink()}
+            >
+              <ShareIcon />
+            </IconButton>
+            <IconButton
+              className={classes.topBarActionButton}
+              onClick={() => updateAllQuotes()}
+            >
+              <RefreshIcon />
+            </IconButton>
+          </ButtonGroup>
+        </Box>
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={4000}
+          onClose={() => setSnackbarOpen(false)}
+        >
+          <Alert onClose={() => setSnackbarOpen(false)} severity="success">
+            Share link copied to clipboard!
+          </Alert>
+        </Snackbar>
+      </Box>
     </Box>
   );
 };

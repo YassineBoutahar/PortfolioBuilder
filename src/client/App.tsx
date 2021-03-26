@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import HoldingList from "./Containers/HoldingList";
 import Charts from "./Containers/Charts";
 import PortfolioControls from "./Containers/PortfolioControls";
-import { Box, Typography, makeStyles } from "@material-ui/core";
+import { Box, makeStyles } from "@material-ui/core";
 import { Holding, LocalStorageItem, AppProps } from "../shared/types";
 import randomColor from "randomcolor";
 import moment from "moment";
@@ -11,7 +11,7 @@ import axios from "axios";
 const holdingsKey = "PortfolioBuilderHoldings";
 
 const useStyles = makeStyles({
-  body: {
+  root: {
     marginTop: "0.25rem",
     height: "100%",
   },
@@ -20,10 +20,6 @@ const useStyles = makeStyles({
   },
   chartSection: {
     marginLeft: "0.75rem",
-  },
-  buttonGroupOverline: {
-    lineHeight: 1.75,
-    fontSize: "0.7rem",
   },
   portfolioValueBar: {
     width: 160,
@@ -247,33 +243,21 @@ const App = ({ urlShareHash }: AppProps) => {
 
   return (
     <Box
-      className={classes.body}
+      className={classes.root}
       display="flex"
       flexDirection="row"
       flex={1}
       width={1}
     >
       <Box width={1} className={classes.portfolioSection}>
-        <Box display="flex" flexDirection="column" width={1}>
-          <Box textAlign="center">
-            <Typography
-              className={classes.buttonGroupOverline}
-              variant="overline"
-              color="textSecondary"
-              align="center"
-            >
-              Portfolio Controls
-            </Typography>
-          </Box>
-          <Box>
-            <PortfolioControls
-              holdings={holdings}
-              totalValue={totalValue}
-              setTotalValue={setTotalValue}
-              addQuote={addQuote}
-              updateAllQuotes={updateAllQuotes}
-            />
-          </Box>
+        <Box>
+          <PortfolioControls
+            holdings={holdings}
+            totalValue={totalValue}
+            setTotalValue={setTotalValue}
+            addQuote={addQuote}
+            updateAllQuotes={updateAllQuotes}
+          />
         </Box>
         <Box>
           <HoldingList
