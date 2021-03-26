@@ -66,7 +66,7 @@ const App = ({ urlShareHash }: AppProps) => {
 
   const [totalValue, setTotalValue] = useState<number>(0);
   const [holdings, setHoldings] = useState<Map<string, Holding>>(new Map());
-  const [remainingPercent, setRemainingPercent] = useState<number>(100);
+  // const [remainingPercent, setRemainingPercent] = useState<number>(100);
   const [chosenTimePeriod, setTimePeriod] = useState<"y" | "M" | "w">("y");
   const [chosenInterval, setPriceInterval] = useState<"1mo" | "1d" | "1wk">(
     "1wk"
@@ -89,6 +89,7 @@ const App = ({ urlShareHash }: AppProps) => {
       }
     }
     getAutocompleteValues();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchFromShareLink = (shareHash: string) => {
@@ -330,14 +331,14 @@ const App = ({ urlShareHash }: AppProps) => {
     );
   };
 
-  const getEstimatedShares = (ticker: string) => {
-    let holdingObj = holdings.get(ticker);
-    return Math.floor(
-      (totalValue * (holdingObj?.portfolioPercentage || 0)) /
-        100 /
-        (holdingObj?.currentPrice || 99999999)
-    );
-  };
+  // const getEstimatedShares = (ticker: string) => {
+  //   let holdingObj = holdings.get(ticker);
+  //   return Math.floor(
+  //     (totalValue * (holdingObj?.portfolioPercentage || 0)) /
+  //       100 /
+  //       (holdingObj?.currentPrice || 99999999)
+  //   );
+  // };
 
   const createShareLink = () => {
     let newUUID = uuidv4();

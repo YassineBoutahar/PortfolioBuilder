@@ -1,7 +1,6 @@
 import React from "react";
 import PriceChange from "./PriceChange";
 import {
-  Grid,
   Box,
   IconButton,
   ButtonGroup,
@@ -11,7 +10,6 @@ import {
   ListItem,
   ListItemText,
   ListItemAvatar,
-  ListItemSecondaryAction,
   Typography,
   makeStyles,
   createStyles,
