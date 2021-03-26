@@ -7,6 +7,7 @@ import { Holding, LocalStorageItem, AppProps } from "../shared/types";
 import randomColor from "randomcolor";
 import moment from "moment";
 import axios from "axios";
+import DisclaimerDialog from "./Components/DisclaimerDialog";
 
 const holdingsKey = "PortfolioBuilderHoldings";
 
@@ -249,6 +250,7 @@ const App = ({ urlShareHash }: AppProps) => {
       flex={1}
       width={1}
     >
+      <DisclaimerDialog />
       <Box width={1} className={classes.portfolioSection}>
         <Box>
           <PortfolioControls
