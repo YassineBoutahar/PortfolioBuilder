@@ -70,3 +70,11 @@ export interface PressChartProps {
 export interface AppProps {
   urlShareHash?: string;
 }
+
+export interface PortfolioControlsProps {
+  holdings: Map<string, Holding>;
+  totalValue: number;
+  setTotalValue: Dispatch<SetStateAction<number>>;
+  addQuote: (ticker: string) => void;
+  updateAllQuotes: () => void;
+}

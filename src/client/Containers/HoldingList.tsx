@@ -1,5 +1,5 @@
 import React from "react";
-import SingleHolding from "./SingleHolding";
+import SingleHolding from "../Components/SingleHolding";
 import { List, Box, Typography } from "@material-ui/core";
 import { Holding, HoldingListProps } from "../../shared/types";
 
